@@ -13,8 +13,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - run: node --check app-v8.js
+      - run: node --check app-v9.js
       - run: test -f index.html
-      - run: test -f styles-v8.css
+      - run: test -f styles-v9.css
       - run: test -f manifest.webmanifest
       - run: test -f sw.js
