@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v16.css">
+  <link rel="stylesheet" href="./styles-v17.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -115,11 +115,16 @@
         </div>
       </div>
 
-      <div class="insight-card">
-        <h3 data-i18n="whatSaw">AI เห็นอะไร</h3>
-        <div id="summaryText"></div>
-        <div id="analysisOverview" class="analysis-overview"></div>
-      </div>
+      <div id="coachReport" class="coach-report"></div>
+
+      <details class="secondary-analysis">
+        <summary data-i18n="aiDetectedDetails">ดูข้อมูลที่ AI ตรวจพบ</summary>
+        <div class="insight-card compact-insight">
+          <h3 data-i18n="whatSaw">ข้อมูลที่ AI ตรวจพบ</h3>
+          <div id="summaryText"></div>
+          <div id="analysisOverview" class="analysis-overview"></div>
+        </div>
+      </details>
 
       <div class="skill-map-panel">
         <div class="section-title compact">
@@ -186,6 +191,11 @@
         <div id="keyFrameGrid" class="key-frame-grid"></div>
       </div>
 
+      <details class="advanced-results">
+        <summary>
+          <div><b data-i18n="technicalDetails">ดูข้อมูลวิเคราะห์เชิงเทคนิค</b><span data-i18n="technicalHelp">องศา 3D, Biomechanics, Footwork และวิดีโอเต็ม สำหรับผู้ที่ต้องการตรวจรายละเอียด</span></div>
+        </summary>
+        <div class="advanced-results-body">
       <div class="visual-section">
         <div class="section-title compact">
           <span class="step-dot">6</span>
@@ -247,6 +257,10 @@
         <div id="metricsGrid" class="metric-grid"></div>
       </details>
 
+
+        </div>
+      </details>
+
       <div class="action-card">
         <h3 data-i18n="nextTitle">ทำอะไรต่อ</h3>
         <div id="nextActions"></div>
@@ -285,6 +299,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v16.js"></script>
+<script type="module" src="./app-v17.js"></script>
 </body>
 </html>
