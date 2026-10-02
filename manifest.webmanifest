@@ -1,0 +1,10 @@
+{
+  "name":"SkillCam Mobile Test",
+  "short_name":"SkillCam",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f5f8ff",
+  "theme_color":"#0b63f6",
+  "icons":[]
+}
