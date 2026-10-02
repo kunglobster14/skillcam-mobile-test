@@ -809,17 +809,55 @@ function renderCourtPosition(){
   const dnet=Math.abs(cp.y-6.70);
   box.innerHTML="<div class='court-position-card'><b>"+t("courtPositionTitle")+"</b><div class='court-values'><span>"+t("courtX")+": <strong>"+cp.x.toFixed(2)+" "+t("meter")+"</strong></span><span>"+t("courtY")+": <strong>"+cp.y.toFixed(2)+" "+t("meter")+"</strong></span><span>"+t("distanceNet")+": <strong>"+dnet.toFixed(2)+" "+t("meter")+"</strong></span></div><p>"+t("courtEvidence")+"</p></div>"
 }
+function evaluateCurrentAction(){
+  const action=currentAnalysis?.actions?.[currentActionIndex],p=currentAnalysis?.precise;
+  if(!action||!p)return{status:"insufficient",checks:[]};
+  const checks=[],add=(key,status,detail)=>checks.push({key,status,detail});
+  add("checkPose",p.pose_confidence>=.75?"pass":"review",p.pose_confidence>=.75?t("posePass"):t("poseReview"));
+  if(action.type==="overhead"||action.type==="jump_overhead"){
+    const j=p.image_joints,side=p.side||action.side,w=j[side+"_wrist"],sh=j[side+"_shoulder"];
+    const contactOK=!!(w&&sh&&w.y<sh.y-.02);
+    add("checkContact",contactOK?"pass":"review",contactOK?t("contactPass"):t("contactReview"));
+    if(action.sequence?.enough)add("checkSequence",action.sequence.ordered?"pass":"review",action.sequence.ordered?t("sequencePass"):t("sequenceReview"));
+    else add("checkSequence","insufficient",t("evaluationInsufficient"));
+    const e=p.metrics.elbow_3d?.value;
+    if(e==null)add("checkElbow","insufficient",t("evaluationInsufficient"));
+    else if(e>175)add("checkElbow","review",t("elbowReview"));
+    else if(e<115)add("checkElbow","review",t("elbowEarly"));
+    else add("checkElbow","pass",t("elbowPass"))
+  }
+  if(currentAnalysis.movement_type!=="standing"){
+    add("checkRecovery",action.recovery_time!=null?"pass":"review",action.recovery_time!=null?t("recoveryPass"):t("recoveryReview"))
+  }
+  const measurable=checks.filter(c=>c.status!=="insufficient"),reviews=measurable.filter(c=>c.status==="review").length;
+  return{status:!measurable.length?"insufficient":reviews?"review":"good",checks}
+}
+function renderEvaluation(){
+  const e=evaluateCurrentAction();
+  const title=e.status==="good"?t("evaluationGood"):e.status==="review"?t("evaluationReview"):t("evaluationInsufficient");
+  const cls=e.status==="good"?"eval-good":e.status==="review"?"eval-review":"eval-neutral";
+  $("#evaluationSummary").innerHTML="<div class='evaluation-head "+cls+"'><b>"+title+"</b><span>"+t("evidenceNote")+"</span></div>";
+  $("#checkList").innerHTML=e.checks.map(c=>{
+    const label=c.status==="pass"?t("pass"):c.status==="review"?t("review"):t("insufficient");
+    return"<div class='check-row-card "+c.status+"'><div><b>"+t(c.key)+"</b><p>"+c.detail+"</p></div><span>"+label+"</span></div>"
+  }).join("")
+}
 function renderMeasurementReview(){
-  const p=currentAnalysis?.precise;if(!p){$("#adviceList").innerHTML="";return}
-  const m=p.metrics,notes=[];
-  if(p.pose_confidence<.72)notes.push(t("reviewLowConf"));
-  const diffs=[
-    [m.elbow_3d,m.elbow_2d],[m.shoulder_3d,m.shoulder_2d],[m.left_knee_3d,m.left_knee_2d],[m.right_knee_3d,m.right_knee_2d]
-  ].filter(([a,b])=>a?.value!=null&&b?.value!=null).map(([a,b])=>Math.abs(a.value-b.value));
-  if(diffs.length&&Math.max(...diffs)>15)notes.push(t("reviewPerspective"));
-  if(m.elbow_3d?.value!=null&&m.elbow_3d.value<135)notes.push(t("reviewBentElbow"));
-  if(!notes.length)notes.push(t("reviewBalanced"));
-  $("#adviceList").innerHTML="<p class='note'><b>"+t("reviewTitle")+"</b></p>"+notes.map((n,i)=>"<div class='advice "+(i===0&&p.pose_confidence<.72?"check":"")+"'><b>"+(i+1)+".</b> "+n+"</div>").join("");
+  const p=currentAnalysis?.precise,action=currentAnalysis?.actions?.[currentActionIndex];
+  if(!p||!action){$("#adviceList").innerHTML="";return}
+  const e=evaluateCurrentAction(),notes=[];
+  if(p.pose_confidence<.75)notes.push(t("reviewLowConf"));
+  const contact=e.checks.find(c=>c.key==="checkContact");
+  const sequence=e.checks.find(c=>c.key==="checkSequence");
+  const elbow=e.checks.find(c=>c.key==="checkElbow");
+  const recovery=e.checks.find(c=>c.key==="checkRecovery");
+  if(contact?.status==="review")notes.push(t("trainHighContact"));
+  if(sequence?.status==="review")notes.push(t("trainSequence"));
+  if(elbow?.status==="review"&&p.metrics.elbow_3d?.value>175)notes.push(t("trainElbowLock"));
+  if(elbow?.status==="review"&&p.metrics.elbow_3d?.value<115)notes.push(t("trainFrame"));
+  if(recovery?.status==="review")notes.push(t("trainRecovery"));
+  if(!notes.length)notes.push(t("trainGood"));
+  $("#adviceList").innerHTML="<p class='note'><b>"+t("trainingTitle")+"</b></p>"+notes.slice(0,3).map((n,i)=>"<div class='advice'><b>"+(i+1)+".</b> "+n+"</div>").join("")
 }
 
 function drawOverlay(){
