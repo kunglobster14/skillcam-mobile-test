@@ -295,7 +295,7 @@ function renderResult(a){
 
   if(resultURL)URL.revokeObjectURL(resultURL);resultURL=URL.createObjectURL(currentFile);
   const v=$("#resultVideo");v.src=resultURL;
-  v.onloadedmetadata=()=>{v.currentTime=Math.max(0,a.contact_time);const onSeek=()=>{v.removeEventListener("seeked",onSeek);measureCurrentFrame()};v.addEventListener("seeked",onSeek)};
+  v.onloadedmetadata=()=>{const onSeek=()=>{v.removeEventListener("seeked",onSeek);measureCurrentFrame()};v.addEventListener("seeked",onSeek);v.currentTime=Math.max(0,a.contact_time)};
   setTimeout(()=>$("#analysisCard").scrollIntoView({behavior:"smooth",block:"start"}),120)
 }
 
@@ -344,13 +344,17 @@ function drawOverlay(){
 }
 
 async function stepFrame(delta){
-  if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();v.currentTime=clamp(v.currentTime+delta,0,Math.max(0,(v.duration||0)-.001));
-  await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);setTimeout(finish,700)});
-  $("#measurementMode").textContent=t("confirmContact")+" · "+v.currentTime.toFixed(3)+"s";drawOverlay()
+  if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();
+  const target=clamp(v.currentTime+delta,0,Math.max(0,(v.duration||0)-.001));
+  await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);v.currentTime=target;setTimeout(finish,700)});
+  currentAnalysis.precise=null;renderPrecise();
+  const c=$("#poseCanvas");if(c){const ctx=c.getContext("2d");ctx&&ctx.clearRect(0,0,c.width,c.height)}
+  $("#measurementMode").textContent=t("confirmContact")+" · "+v.currentTime.toFixed(3)+"s"
 }
 function jumpToAIFrame(){
-  if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();v.currentTime=currentAnalysis.contact_time;
-  const f=()=>{v.removeEventListener("seeked",f);drawOverlay()};v.addEventListener("seeked",f);setTimeout(drawOverlay,400)
+  if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();
+  const f=()=>{v.removeEventListener("seeked",f);measureCurrentFrame()};v.addEventListener("seeked",f);
+  v.currentTime=currentAnalysis.contact_time
 }
 
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("skillcam-local",3);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("sessions"))db.createObjectStore("sessions",{keyPath:"id"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
@@ -364,7 +368,9 @@ async function getSessions(){const db=await openDB();return new Promise((resolve
 
 async function loadProgress(){
   const all=await getSessions();if(!all.length){$("#progressSummary").innerHTML="<p>"+t("noHistory")+"</p>";$("#historyList").innerHTML="";return}
-  const latest=all[0],prev=all[1];let html="<h2>"+t("compare")+"</h2>";
+  const latest=all[0];
+  const prev=all.slice(1).find(s=>s.analysis.movement_type===latest.analysis.movement_type&&s.analysis.precise?.camera_view===latest.analysis.precise?.camera_view);
+  let html="<h2>"+t("compare")+"</h2>";
   const keys=["elbow_3d","shoulder_3d","left_knee_3d","right_knee_3d","torso_tilt_3d"];
   if(!prev)html+="<p class='note'>"+t("needTwo")+"</p>";
   else html+="<div class='progress-grid'>"+keys.map(k=>{const a=latest.analysis.precise.metrics[k]?.value,b=prev.analysis.precise.metrics[k]?.value,d=a!=null&&b!=null?a-b:null;return"<div class='progress-box'><small>"+t("metric_"+k)+"</small><strong>"+(d==null?"—":(d>0?"+":"")+d.toFixed(1)+"°")+"</strong><small>"+(b??"—")+" → "+(a??"—")+"</small></div>"}).join("")+"</div>";
