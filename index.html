@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v9.css">
+  <link rel="stylesheet" href="./styles-v10.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
 <header class="appbar">
   <div>
     <div class="brand">SkillCam</div>
-    <div class="brand-sub" data-i18n="brandSub">AI Skill Mapping · Player Lock</div>
+    <div class="brand-sub" data-i18n="brandSub">AI Skill Mapping · Court Calibrated</div>
   </div>
   <select id="languageSelect" class="lang-select" aria-label="Language">
     <option value="th">ไทย</option>
@@ -75,6 +75,18 @@
         <div id="playerLockState" class="note" data-i18n="tapPlayer">ยังไม่ได้เลือกผู้เล่น</div>
       </div>
 
+      <div id="courtCalPanel" class="court-cal hidden">
+        <div class="section-title compact">
+          <span class="step-dot">3</span>
+          <div><h3 data-i18n="courtCalTitle">ปรับเทียบสนาม</h3><p data-i18n="courtCalHelp">แนะนำ: แตะมุมสนามคู่ 4 จุดตามลำดับ เพื่อแปลงภาพเป็นตำแหน่งจริงบนสนาม</p></div>
+        </div>
+        <div class="court-actions">
+          <button id="startCourtCalBtn" type="button" class="secondary-btn" data-i18n="startCourtCal">เริ่มเลือก 4 มุมสนาม</button>
+          <button id="resetCourtCalBtn" type="button" class="secondary-btn" data-i18n="resetCourtCal">ล้างจุด</button>
+        </div>
+        <div id="courtCalState" class="note" data-i18n="courtCalOptional">ข้ามได้ แต่ Footwork จะเป็นเพียงค่าประมาณจากภาพ</div>
+      </div>
+
       <label class="check-row"><input id="consentAnalysis" type="checkbox" checked><span data-i18n="consent">ยินยอมให้วิเคราะห์คลิปบนอุปกรณ์นี้</span></label>
       <label class="check-row subtle"><input id="saveProgress" type="checkbox" checked><span data-i18n="saveProgress">เก็บผลไว้ใน Safari เพื่อดูพัฒนาการ</span></label>
 
@@ -133,7 +145,11 @@
           <span><i class="line-guide"></i><b data-i18n="guidePose">Arc ขององศาที่วัด</b></span>
         </div>
         <div class="zoom-label"><b data-i18n="zoomTitle">ภาพขยายผู้เล่น + มุมที่วัด</b><span data-i18n="zoomHelp">AI crop ผู้เล่นหลักเพื่อให้เห็นข้อต่อชัดขึ้น</span></div>
-        <div class="zoom-stage"><canvas id="zoomCanvas"></canvas></div>
+        <div class="zoom-stage">
+          <img id="zoomImage" alt="" />
+          <canvas id="zoomCanvas"></canvas>
+          <div id="zoomStatus" class="zoom-status" data-i18n="zoomWaiting">รอเลือกจังหวะและวัดผู้เล่น</div>
+        </div>
         <div class="zoom-label full-label"><b data-i18n="fullFrameTitle">วิดีโอเต็ม</b><span data-i18n="fullFrameHelp">ใช้ดูบริบทและตรวจว่า AI ติดตามคนถูกหรือไม่</span></div>
         <div class="video-stage">
           <video id="resultVideo" controls playsinline></video>
@@ -171,6 +187,7 @@
 
       <div class="coach-section">
         <h3 data-i18n="footworkTitle">Footwork / การเข้าตำแหน่ง</h3>
+        <div id="courtPosition"></div>
         <div id="footworkText"></div>
       </div>
 
@@ -217,6 +234,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v9.js"></script>
+<script type="module" src="./app-v10.js"></script>
 </body>
 </html>
