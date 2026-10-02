@@ -13,18 +13,21 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - run: node --check app-v17.js
-      - run: grep -q 'app-v17.js' index.html
-      - run: grep -q 'skillcam-local-v17' sw.js
+      - run: node --check app-v18.js
+      - run: grep -q 'app-v18.js' index.html
+      - run: grep -q 'skillcam-local-v18' sw.js
       - run: grep -q 'keyFrameGrid' index.html
       - run: grep -q 'skillReplayImage' index.html
       - run: grep -q 'coachReport' index.html
-      - run: grep -q 'renderCoachReport' app-v17.js
-      - run: grep -q 'technicalDetails' app-v17.js
+      - run: grep -q 'analysisGate' app-v18.js
+      - run: grep -q 'coachDecision' app-v18.js
+      - run: grep -q 'resultUseReady' app-v18.js
+      - run: grep -q 'renderCoachReport' app-v18.js
+      - run: grep -q 'technicalDetails' app-v18.js
       - run: grep -q 'replaySpeedSelect' index.html
-      - run: grep -q 'replayPhase' app-v17.js
-      - run: grep -q 'keyFramesTitle' app-v17.js
+      - run: grep -q 'replayPhase' app-v18.js
+      - run: grep -q 'keyFramesTitle' app-v18.js
       - run: test -f index.html
-      - run: test -f styles-v17.css
+      - run: test -f styles-v18.css
       - run: test -f manifest.webmanifest
       - run: test -f sw.js
