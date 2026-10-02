@@ -636,7 +636,7 @@ Object.assign(I18N.th,{
   standingExplain:"Standing: ระบบจะเน้นลำตัว แขน contact และ recovery โดยไม่สร้างคะแนนการวิ่ง",
   movingExplain:"Moving/Jump-like: ระบบจึงเพิ่ม approach, ฐานเท้า, balance และ recovery",
   technicalDetails:"ดูค่ารายละเอียด",
-  measurementDisclaimer:"ค่าตัวเลขเป็น 2D measurement/proxy จึงขึ้นกับมุมกล้องและยังไม่ใช่เกณฑ์มาตรฐานของโค้ช"
+  measurementDisclaimer:"ค่าตัวเลขเป็น 2D measurement/proxy จึงขึ้นกับมุมกล้องและยังไม่ใช่เกณฑ์มาตรฐานของโค้ช",currentPoseLegend:"ท่าที่ตรวจได้",guidePoseLegend:"แนวทางทดลองปรับ"
 });
 
 Object.assign(I18N.en,{
@@ -695,7 +695,7 @@ Object.assign(I18N.en,{
   standingExplain:"Standing: the system focuses on torso, arm, contact and recovery; it does not invent a running score.",
   movingExplain:"Moving/Jump-like: approach, foot base, balance and recovery proxies are added.",
   technicalDetails:"Show technical measurements",
-  measurementDisclaimer:"Numbers are 2D measurements/proxies and depend on camera angle. They are not yet coach-standard thresholds."
+  measurementDisclaimer:"Numbers are 2D measurements/proxies and depend on camera angle. They are not yet coach-standard thresholds.",currentPoseLegend:"Detected pose",guidePoseLegend:"Development guide"
 });
 
 function clamp01(x){ return Math.max(0,Math.min(1,x)); }
@@ -1063,6 +1063,14 @@ function drawOverlay(a){
       ctx.save();ctx.setLineDash([18,12]);ctx.strokeStyle="rgba(59,130,246,.95)";ctx.lineWidth=Math.max(4,c.width/220);
       ctx.beginPath();ctx.moveTo(ep[0],ep[1]);ctx.lineTo(ep[0]+vx/mag*c.width*.12,ep[1]+vy/mag*c.width*.12);ctx.stroke();ctx.restore();
     }
+  }
+  const bal=a.metrics.balance_offset&&a.metrics.balance_offset.value;
+  const hm=jointMid(j,"left_hip","right_hip"),am=jointMid(j,"left_ankle","right_ankle");
+  if(bal!=null&&bal>0.75&&hm&&am){
+    const hp=xy(hm),ap=xy(am);
+    ctx.save();ctx.setLineDash([18,12]);ctx.strokeStyle="rgba(59,130,246,.95)";ctx.lineWidth=Math.max(4,c.width/220);
+    ctx.beginPath();ctx.moveTo(hp[0],hp[1]);ctx.lineTo(ap[0],hp[1]);ctx.stroke();
+    ctx.beginPath();ctx.arc(ap[0],hp[1],Math.max(10,c.width/90),0,Math.PI*2);ctx.stroke();ctx.restore();
   }
 }
 
