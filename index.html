@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v7.css">
+  <link rel="stylesheet" href="./styles-v8.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -90,6 +90,15 @@
         <div id="summaryText"></div>
       </div>
 
+      <div class="skill-map-panel">
+        <div class="section-title compact">
+          <span class="step-dot">4</span>
+          <div><h3 data-i18n="skillMapTitle">Skill Map ในคลิป</h3><p data-i18n="skillMapHelp">AI แยกจังหวะตีหลายรูปแบบในคลิป แตะรายการเพื่อดูและวัดท่านั้น</p></div>
+        </div>
+        <div id="playerTrackState" class="note"></div>
+        <div id="skillTimeline" class="skill-timeline"></div>
+      </div>
+
       <div class="accuracy-panel">
         <div class="section-title compact">
           <span class="step-dot">2</span>
@@ -115,6 +124,7 @@
         <div class="video-stage">
           <video id="resultVideo" controls playsinline></video>
           <canvas id="poseCanvas"></canvas>
+          <div id="cropBadge" class="crop-badge hidden" data-i18n="trackingPlayer">AI กำลังวัดผู้เล่นหลัก</div>
         </div>
         <div class="button-row">
           <button id="contactBtn" type="button" class="secondary-btn" data-i18n="contactBtn">ไปที่จังหวะตี</button>
@@ -187,6 +197,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v7.js"></script>
+<script type="module" src="./app-v8.js"></script>
 </body>
 </html>
