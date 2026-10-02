@@ -252,7 +252,7 @@ $("#analyzeBtn").addEventListener("click", async () => {
   const file=$("#videoInput").files[0];
   if (!file) return showMessage($("#playerMessage"),"กรุณาเลือกคลิปก่อน","error");
   if (!$("#consentAnalysis").checked) return showMessage($("#playerMessage"),"ต้องยินยอมให้วิเคราะห์คลิปก่อน","error");
-  if (file.size > 30*1024*1024) return showMessage($("#playerMessage"),"คลิปใหญ่เกิน 30 MB กรุณาตัดคลิปให้สั้นลง","error");
+  if (file.size > 200*1024*1024) return showMessage($("#playerMessage"),"คลิปใหญ่เกิน 200 MB กรุณาตัดคลิปให้สั้นลงสำหรับการทดสอบบน Safari","error");
 
   const btn=$("#analyzeBtn"); btn.disabled=true;
   showMessage($("#playerMessage"),"กำลังโหลด Pose model และวิเคราะห์บน iPhone...");
