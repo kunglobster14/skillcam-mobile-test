@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v13.css">
+  <link rel="stylesheet" href="./styles-v15.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -160,10 +160,23 @@
         <div id="measurementMode" class="note"></div>
       </div>
 
-      <div class="visual-section">
+      <div class="key-frame-section">
         <div class="section-title compact">
           <span class="step-dot">5</span>
-          <div><h3 data-i18n="visualTitle">Visual Coach</h3><p data-i18n="visualHelp">ตรวจว่าจังหวะที่ AI เลือกตรงกับ Smash ของคุณก่อน</p></div>
+          <div><h3 data-i18n="keyFramesTitle">5 ภาพสำคัญของจังหวะตี</h3><p data-i18n="keyFramesHelp">ดูภาพจริงทีละเฟรมพร้อมตำแหน่งมุมที่วัด</p></div>
+        </div>
+        <div class="key-angle-defs">
+          <span data-i18n="keyElbowRule">ศอก = ไหล่–ศอก–ข้อมือ</span>
+          <span data-i18n="keyShoulderRule">ไหล่ = สะโพก–ไหล่–ศอก</span>
+          <span data-i18n="keyKneeRule">เข่า = สะโพก–เข่า–ข้อเท้า</span>
+        </div>
+        <div id="keyFrameGrid" class="key-frame-grid"></div>
+      </div>
+
+      <div class="visual-section">
+        <div class="section-title compact">
+          <span class="step-dot">6</span>
+          <div><h3 data-i18n="visualTitle">วิดีโอเต็มสำหรับตรวจการติดตาม</h3><p data-i18n="visualHelp">ใช้ตรวจว่า AI ติดตามผู้เล่นถูกคนหรือไม่</p></div>
         </div>
         <div class="legend">
           <span><i class="line-current"></i><b data-i18n="currentPose">ท่าที่ตรวจพบ</b></span>
@@ -259,6 +272,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v14.js"></script>
+<script type="module" src="./app-v15.js"></script>
 </body>
 </html>
