@@ -16,3 +16,7 @@
 .history-item:last-child{border-bottom:0}
 .message.warn{background:#fff7e6;color:#8a5a00}
 @media(max-width:600px){.result-head{display:block}.result-head>span{margin-bottom:8px}.visual-coach .row{display:block}.visual-coach .row .btn{width:100%}}
+
+.overlay-legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 4px;font-size:12px;color:#475467}
+.overlay-legend span{display:flex;align-items:center;gap:6px}.overlay-legend i{display:inline-block;width:24px;height:4px;border-radius:4px}
+.legend-current{background:#22c55e}.legend-guide{border-top:3px dashed #3b82f6;height:1px!important;border-radius:0!important}
