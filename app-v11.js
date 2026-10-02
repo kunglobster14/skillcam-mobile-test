@@ -19,6 +19,7 @@ let courtCalPoints=[];
 let courtHomography=null;
 let courtInverseHomography=null;
 let courtCalActive=false;
+let courtPointerHandled=false;
 
 const IDX={
   nose:0,left_shoulder:11,right_shoulder:12,left_elbow:13,right_elbow:14,left_wrist:15,right_wrist:16,
@@ -959,7 +960,8 @@ function drawPlayerSelector(){
   ctx.font="900 "+Math.max(18,Math.round(c.width/35))+"px -apple-system,sans-serif";ctx.fillStyle="#fff";ctx.strokeStyle="rgba(0,0,0,.75)";ctx.lineWidth=5;ctx.strokeText(t("lockMarker"),x+r+10,y);ctx.fillText(t("lockMarker"),x+r+10,y);ctx.restore()
 }
 $("#playerSelectCanvas").addEventListener("pointerup",e=>{
-  if(!selectorBaseCanvas||!currentFile)return;
+  if(courtPointerHandled){courtPointerHandled=false;return}
+  if(!selectorBaseCanvas||!currentFile||courtCalActive)return;
   const c=e.currentTarget,r=c.getBoundingClientRect();
   playerSeed={x:clamp((e.clientX-r.left)/r.width,0,1),y:clamp((e.clientY-r.top)/r.height,0,1)};
   drawCourtCalibration();$("#playerLockState").textContent=t("playerLocked");
@@ -979,6 +981,7 @@ $("#resetCourtCalBtn").addEventListener("click",()=>{
 });
 $("#playerSelectCanvas").addEventListener("pointerdown",e=>{
   if(!courtCalActive)return;
+  courtPointerHandled=true;
   e.stopImmediatePropagation();e.preventDefault();
   const c=e.currentTarget,r=c.getBoundingClientRect();
   courtCalPoints.push({x:clamp((e.clientX-r.left)/r.width,0,1),y:clamp((e.clientY-r.top)/r.height,0,1)});
