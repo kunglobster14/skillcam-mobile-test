@@ -1,5 +1,5 @@
-const CACHE='skillcam-local-v7';
-const ASSETS=['./','./index.html','./app-v7.js','./styles-v7.css','./manifest.webmanifest'];
+const CACHE='skillcam-local-v8';
+const ASSETS=['./','./index.html','./app-v8.js','./styles-v8.css','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([
   caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),
