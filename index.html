@@ -92,7 +92,7 @@
 
       <div class="skill-map-panel">
         <div class="section-title compact">
-          <span class="step-dot">4</span>
+          <span class="step-dot">2</span>
           <div><h3 data-i18n="skillMapTitle">Skill Map ในคลิป</h3><p data-i18n="skillMapHelp">AI แยกจังหวะตีหลายรูปแบบในคลิป แตะรายการเพื่อดูและวัดท่านั้น</p></div>
         </div>
         <div id="playerTrackState" class="note"></div>
@@ -101,7 +101,7 @@
 
       <div class="accuracy-panel">
         <div class="section-title compact">
-          <span class="step-dot">2</span>
+          <span class="step-dot">3</span>
           <div><h3 data-i18n="accuracyTitle">ยืนยันเฟรมและวัดองศา</h3><p data-i18n="accuracyHelp">AI เลือกเฟรมให้ก่อน แต่คุณสามารถขยับเฟรมแล้วให้ระบบวัดใหม่แบบละเอียด</p></div>
         </div>
         <div class="frame-controls">
@@ -114,13 +114,16 @@
 
       <div class="visual-section">
         <div class="section-title compact">
-          <span class="step-dot">3</span>
+          <span class="step-dot">4</span>
           <div><h3 data-i18n="visualTitle">Visual Coach</h3><p data-i18n="visualHelp">ตรวจว่าจังหวะที่ AI เลือกตรงกับ Smash ของคุณก่อน</p></div>
         </div>
         <div class="legend">
           <span><i class="line-current"></i><b data-i18n="currentPose">ท่าที่ตรวจพบ</b></span>
-          <span><i class="line-guide"></i><b data-i18n="guidePose">แนวทางทดลองปรับ</b></span>
+          <span><i class="line-guide"></i><b data-i18n="guidePose">Arc ขององศาที่วัด</b></span>
         </div>
+        <div class="zoom-label"><b data-i18n="zoomTitle">ภาพขยายผู้เล่น + มุมที่วัด</b><span data-i18n="zoomHelp">AI crop ผู้เล่นหลักเพื่อให้เห็นข้อต่อชัดขึ้น</span></div>
+        <div class="zoom-stage"><canvas id="zoomCanvas"></canvas></div>
+        <div class="zoom-label full-label"><b data-i18n="fullFrameTitle">วิดีโอเต็ม</b><span data-i18n="fullFrameHelp">ใช้ดูบริบทและตรวจว่า AI ติดตามคนถูกหรือไม่</span></div>
         <div class="video-stage">
           <video id="resultVideo" controls playsinline></video>
           <canvas id="poseCanvas"></canvas>
