@@ -363,44 +363,106 @@ function preciseMetrics(imageJ,worldJ,side){
   }
 }
 
+function expandedPlayerCrop(box){
+  if(!box)return{x:0,y:0,w:1,h:1};
+  const mx=Math.max(.08,box.w*.65),my=Math.max(.08,box.h*.35);
+  let x=Math.max(0,box.x-mx),y=Math.max(0,box.y-my);
+  let x2=Math.min(1,box.x+box.w+mx),y2=Math.min(1,box.y+box.h+my);
+  if(x2-x<.25){const c=(x+x2)/2;x=Math.max(0,c-.125);x2=Math.min(1,c+.125)}
+  if(y2-y<.40){const c=(y+y2)/2;y=Math.max(0,c-.20);y2=Math.min(1,c+.20)}
+  return{x,y,w:x2-x,h:y2-y}
+}
+function remapCropLandmarks(arr,crop){
+  const d={};
+  for(const [name,i] of Object.entries(IDX)){
+    const p=arr?.[i];if(!p)continue;
+    d[name]={x:crop.x+p.x*crop.w,y:crop.y+p.y*crop.h,z:p.z??0,visibility:p.visibility??p.presence??1}
+  }
+  return d
+}
 async function measureCurrentFrame(){
   if(!currentAnalysis||!currentFile)return;
   const v=$("#resultVideo");if(!v.videoWidth)return;
+  const action=currentAnalysis.actions?.[currentActionIndex]||null;
   const pl=await initPrecise();showStatus(t("measuring"),"loading");
   try{
-    const r=pl.detect(v),lm=r.landmarks?.[0],wm=r.worldLandmarks?.[0];
+    const crop=expandedPlayerCrop(action?.bbox);
+    const srcX=Math.round(crop.x*v.videoWidth),srcY=Math.round(crop.y*v.videoHeight);
+    const srcW=Math.max(1,Math.round(crop.w*v.videoWidth)),srcH=Math.max(1,Math.round(crop.h*v.videoHeight));
+    const canvas=document.createElement("canvas");
+    const targetW=Math.min(720,Math.max(360,srcW));
+    const targetH=Math.max(360,Math.round(targetW*srcH/srcW));
+    canvas.width=targetW;canvas.height=Math.min(960,targetH);
+    const ctx=canvas.getContext("2d");
+    ctx.drawImage(v,srcX,srcY,srcW,srcH,0,0,canvas.width,canvas.height);
+
+    const r=pl.detect(canvas),lm=r.landmarks?.[0],wm=r.worldLandmarks?.[0];
     if(!lm||!wm)throw new Error(t("poseLow"));
-    const imageJ=dictFromLandmarks(lm),worldJ=dictFromLandmarks(wm),metrics=preciseMetrics(imageJ,worldJ,currentAnalysis.hitting_side);
+    const imageJ=remapCropLandmarks(lm,crop),worldJ=dictFromLandmarks(wm);
+    const side=action?.side||currentAnalysis.hitting_side;
+    const metrics=preciseMetrics(imageJ,worldJ,side);
     const confs=Object.values(metrics).map(m=>m.confidence).filter(Number.isFinite);
-    currentAnalysis.precise={
+    const precise={
       time:round(v.currentTime,3),image_joints:imageJ,world_joints:worldJ,metrics,
       pose_confidence:round(confs.reduce((a,b)=>a+b,0)/(confs.length||1),3),
-      camera_view:$("#cameraView")?.value||"unknown",model:"pose_landmarker_full"
+      camera_view:$("#cameraView")?.value||"unknown",model:"pose_landmarker_full",
+      crop,action_type:action?.type||"unknown",action_id:action?.id||1,side
     };
+    if(action)action.precise=precise;
+    currentAnalysis.precise=precise;
+    currentAnalysis.contact_time=precise.time;
+    currentAnalysis.hitting_side=side;
+    renderSkillMap();
     renderPrecise();drawOverlay();await saveCurrentMeasurement();
+    $("#measurementMode").textContent=t("frameMeasured")+" · "+precise.time+"s · "+t("cropMeasure");
+    $("#cropBadge").classList.remove("hidden");
     showStatus($("#saveProgress").checked?t("saved"):t("notSaved"),"success")
-  }catch(e){console.error(e);showStatus(t("analysisFail")+": "+(e.message||e),"error")}
+  }catch(e){
+    console.error(e);
+    $("#cropBadge").classList.add("hidden");
+    showStatus(t("analysisFail")+": "+(e.message||e),"error")
+  }
+}
+
+function renderSkillMap(){
+  const actions=currentAnalysis?.actions||[];
+  $("#playerTrackState").innerHTML="<b>"+t("trackedPlayer")+"</b> · "+t("actionsFound")+" "+actions.length+" "+t("actionUnit")+"<br><span>"+t("primaryPlayerHelp")+"</span><br><span>"+t("skillMapCaution")+"</span>";
+  if(!actions.length){$("#skillTimeline").innerHTML="<p>"+t("noAction")+"</p>";return}
+  $("#skillTimeline").innerHTML=actions.map((a,i)=>
+    "<button type='button' class='skill-chip "+(i===currentActionIndex?"active":"")+"' data-action-index='"+i+"'>"+
+      "<span class='skill-num'>"+(i+1)+"</span><span class='skill-copy'><b>"+actionLabel(a.type)+"</b><small>"+a.time+"s · "+t(a.side)+" · "+pct(a.confidence)+"</small><em>"+(a.precise?t("actionMeasured"):t("actionUnmeasured"))+"</em></span>"+
+    "</button>"
+  ).join("");
+  $$("[data-action-index]").forEach(btn=>btn.addEventListener("click",()=>selectAction(Number(btn.dataset.actionIndex))))
+}
+async function selectAction(index){
+  const actions=currentAnalysis?.actions||[];if(!actions[index])return;
+  currentActionIndex=index;
+  const a=actions[index];
+  currentAnalysis.hitting_side=a.side;currentAnalysis.contact_time=a.time;currentAnalysis.precise=a.precise||null;
+  renderSkillMap();renderResultTextOnly();renderPrecise();
+  const v=$("#resultVideo");v.pause();
+  await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);v.currentTime=a.time;setTimeout(finish,700)});
+  if(a.precise){drawOverlay();$("#measurementMode").textContent=t("measuredAt")+" "+a.precise.time+"s"}
+  else{await measureCurrentFrame()}
 }
 
 function renderResult(a){
-  currentAnalysis=a;$("#analysisCard").classList.remove("hidden");
+  currentAnalysis=a;currentActionIndex=0;$("#analysisCard").classList.remove("hidden");
   $("#movementBadge").textContent=movementLabel(a.movement_type);$("#poseBadge").textContent=t("movementConfidence")+" "+pct(a.movement_confidence);
-  let s="<p>"+t("contactAt")+" <b>"+a.contact_time+" "+t("seconds")+"</b> · "+t("hittingSide")+": <b>"+t(a.hitting_side)+"</b></p>";
-  if(a.contact_candidate_count>1)s+="<div class='status loading'>"+t("multiContact")+"</div>";
-  $("#summaryText").innerHTML=s;$("#measurementMode").textContent=t("modeCoarse")+" → "+t("modePrecise");
-  $("#footworkText").innerHTML="<p>"+(a.movement_type==="standing"?t("standingFoot"):a.movement_type==="jump_like"?t("jumpFoot"):t("movingFoot"))+"</p>";
+  renderSkillMap();renderResultTextOnly();
+  $("#measurementMode").textContent=t("modeCoarse")+" → "+t("modePrecise")+" · "+t("cropMeasure");
   $("#referenceState").innerHTML="<div class='reference-lock'><b>"+t("referencePending")+"</b><p>"+t("referenceNeed")+"</p></div>";
   $("#nextActions").innerHTML="<ol class='next-list'><li>"+t("next1")+"</li><li>"+t("next2")+"</li><li>"+t("next3")+"</li></ol>";
-  $("#contactWarning").textContent=t("confirmContact");
 
   if(resultURL)URL.revokeObjectURL(resultURL);resultURL=URL.createObjectURL(currentFile);
   const v=$("#resultVideo");v.src=resultURL;
-  v.onloadedmetadata=()=>{const onSeek=()=>{v.removeEventListener("seeked",onSeek);measureCurrentFrame()};v.addEventListener("seeked",onSeek);v.currentTime=Math.max(0,a.contact_time)};
+  v.onloadedmetadata=()=>selectAction(0);
   setTimeout(()=>$("#analysisCard").scrollIntoView({behavior:"smooth",block:"start"}),120)
 }
 
 function renderPrecise(){
-  const p=currentAnalysis?.precise;if(!p){$("#angleCards").innerHTML="<p>"+t("noPrecise")+"</p>";return}
+  const p=currentAnalysis?.precise;if(!p){$("#angleCards").innerHTML="<p>"+t("noPrecise")+"</p>";$("#metricsGrid").innerHTML="";$("#poseBadge").textContent=t("movementConfidence")+" "+pct(currentAnalysis?.movement_confidence);return}
   const m=p.metrics,side=currentAnalysis.hitting_side;
   const rows=[
     [t("obsElbow"),m.elbow_3d,m.elbow_2d],
@@ -436,25 +498,32 @@ function drawOverlay(){
     ctx.font="bold "+Math.max(17,Math.round(c.width/40))+"px -apple-system,sans-serif";
     ctx.strokeStyle="rgba(0,0,0,.75)";ctx.lineWidth=5;ctx.strokeText(label,tx,ty);ctx.fillStyle="#fff";ctx.fillText(label,tx,ty);ctx.restore()
   }
-  const side=currentAnalysis.hitting_side,m=p.metrics;
+  const side=p.side||currentAnalysis.hitting_side,m=p.metrics;
   arc(side+"_shoulder",side+"_elbow",side+"_wrist",(m.elbow_3d.value??"—")+"° 3D");
   arc(side+"_hip",side+"_shoulder",side+"_elbow",(m.shoulder_3d.value??"—")+"°");
   arc("left_hip","left_knee","left_ankle",(m.left_knee_3d.value??"—")+"°");
   arc("right_hip","right_knee","right_ankle",(m.right_knee_3d.value??"—")+"°");
+  const box=p.crop;
+  if(box){
+    ctx.save();ctx.strokeStyle="rgba(56,189,248,.95)";ctx.lineWidth=Math.max(3,c.width/260);ctx.setLineDash([14,10]);
+    ctx.strokeRect(box.x*c.width,box.y*c.height,box.w*c.width,box.h*c.height);ctx.restore()
+  }
 }
 
 async function stepFrame(delta){
   if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();
   const target=clamp(v.currentTime+delta,0,Math.max(0,(v.duration||0)-.001));
   await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);v.currentTime=target;setTimeout(finish,700)});
-  currentAnalysis.precise=null;renderPrecise();
+  const action=currentAnalysis.actions?.[currentActionIndex];if(action)action.precise=null;currentAnalysis.precise=null;renderPrecise();
   const c=$("#poseCanvas");if(c){const ctx=c.getContext("2d");ctx&&ctx.clearRect(0,0,c.width,c.height)}
   $("#measurementMode").textContent=t("confirmContact")+" · "+v.currentTime.toFixed(3)+"s"
 }
 function jumpToAIFrame(){
-  if(!currentAnalysis)return;const v=$("#resultVideo");v.pause();
-  const f=()=>{v.removeEventListener("seeked",f);measureCurrentFrame()};v.addEventListener("seeked",f);
-  v.currentTime=currentAnalysis.contact_time
+  if(!currentAnalysis)return;
+  const a=currentAnalysis.actions?.[currentActionIndex];
+  if(a){selectAction(currentActionIndex);return}
+  const v=$("#resultVideo");v.pause();
+  const f=()=>{v.removeEventListener("seeked",f);measureCurrentFrame()};v.addEventListener("seeked",f);v.currentTime=currentAnalysis.contact_time
 }
 
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open("skillcam-local",3);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains("sessions"))db.createObjectStore("sessions",{keyPath:"id"})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
@@ -464,7 +533,7 @@ async function saveCurrentMeasurement(){
   if(!currentSessionId)currentSessionId=crypto.randomUUID();
   await putSession({id:currentSessionId,player_name:$("#playerName").value.trim()||"Player",analysis:currentAnalysis,created_at:new Date().toISOString()})
 }
-async function getSessions(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction("sessions").objectStore("sessions").getAll();r.onsuccess=()=>resolve((r.result||[]).filter(x=>x.analysis?.version==="v7"&&x.analysis?.precise).sort((a,b)=>b.created_at.localeCompare(a.created_at)));r.onerror=()=>reject(r.error)})}
+async function getSessions(){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction("sessions").objectStore("sessions").getAll();r.onsuccess=()=>resolve((r.result||[]).filter(x=>x.analysis?.version==="v8"&&x.analysis?.precise).sort((a,b)=>b.created_at.localeCompare(a.created_at)));r.onerror=()=>reject(r.error)})}
 
 async function loadProgress(){
   const all=await getSessions();if(!all.length){$("#progressSummary").innerHTML="<p>"+t("noHistory")+"</p>";$("#historyList").innerHTML="";return}
@@ -484,16 +553,19 @@ function renderLearn(){
 }
 function applyLanguage(){
   document.documentElement.lang=lang;$("#languageSelect").value=lang;$$("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));renderLearn();
-  if(currentAnalysis){renderResultTextOnly();renderPrecise()}
+  if(currentAnalysis){renderSkillMap();renderResultTextOnly();renderPrecise()}
 }
 function renderResultTextOnly(){
   const a=currentAnalysis;if(!a)return;
+  const action=a.actions?.[currentActionIndex]||null;
   $("#movementBadge").textContent=movementLabel(a.movement_type);
-  let s="<p>"+t("contactAt")+" <b>"+a.contact_time+" "+t("seconds")+"</b> · "+t("hittingSide")+": <b>"+t(a.hitting_side)+"</b></p>";
-  if(a.contact_candidate_count>1)s+="<div class='status loading'>"+t("multiContact")+"</div>";$("#summaryText").innerHTML=s;
+  let s="<p><b>"+(action?actionLabel(action.type):t("unknownAction"))+"</b> · "+t("contactAt")+" <b>"+(action?.time??a.contact_time)+" "+t("seconds")+"</b> · "+t("hittingSide")+": <b>"+t(action?.side||a.hitting_side)+"</b></p>";
+  s+="<p class='note'>"+t("actionsFound")+" "+(a.actions?.length||0)+" "+t("actionUnit")+" · "+t("skillMapCaution")+"</p>";
+  $("#summaryText").innerHTML=s;
   $("#footworkText").innerHTML="<p>"+(a.movement_type==="standing"?t("standingFoot"):a.movement_type==="jump_like"?t("jumpFoot"):t("movingFoot"))+"</p>";
   $("#referenceState").innerHTML="<div class='reference-lock'><b>"+t("referencePending")+"</b><p>"+t("referenceNeed")+"</p></div>";
-  $("#nextActions").innerHTML="<ol class='next-list'><li>"+t("next1")+"</li><li>"+t("next2")+"</li><li>"+t("next3")+"</li></ol>";$("#contactWarning").textContent=t("confirmContact")
+  $("#nextActions").innerHTML="<ol class='next-list'><li>"+t("next1")+"</li><li>"+t("next2")+"</li><li>"+t("next3")+"</li></ol>";
+  $("#contactWarning").textContent=t("confirmContact")
 }
 
 $("#languageSelect").addEventListener("change",e=>{lang=e.target.value;localStorage.setItem("skillcam-language",lang);applyLanguage()});
