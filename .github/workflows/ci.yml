@@ -13,10 +13,12 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - run: node --check app-v14.js
-      - run: grep -q 'app-v14.js' index.html
-      - run: grep -q 'skillcam-local-v14' sw.js
+      - run: node --check app-v15.js
+      - run: grep -q 'app-v15.js' index.html
+      - run: grep -q 'skillcam-local-v15' sw.js
+      - run: grep -q 'keyFrameGrid' index.html
+      - run: grep -q 'keyFramesTitle' app-v15.js
       - run: test -f index.html
-      - run: test -f styles-v13.css
+      - run: test -f styles-v15.css
       - run: test -f manifest.webmanifest
       - run: test -f sw.js
