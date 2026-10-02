@@ -271,6 +271,19 @@ Object.assign(T.en,{
 });
 
 Object.assign(T.th,{
+  brandSub:"AI Training Analysis · Quality First",
+  heroEyebrow:"QUALITY-FIRST ANALYSIS",
+  heroTitle:"วิเคราะห์หลายจังหวะจากคลิปจริง โดยแสดงผลเฉพาะเมื่อ AI วัดผู้เล่นได้ชัด",
+  heroText:"ล็อกผู้เล่นก่อน ตรวจคุณภาพการติดตาม แยกจังหวะตี แล้ววัดข้อต่อและการเคลื่อนไหวทีละจังหวะ",
+  how1:"เลือกคลิป",how1s:"รองรับหลายจังหวะตี",
+  how2:"ล็อกผู้เล่น",how2s:"แตะตัวคุณหนึ่งครั้ง",
+  how3:"วัดท่าจริง",how3s:"Crop + Full pose model",
+  how4:"รับคำแนะนำ",how4s:"เฉพาะสิ่งที่วัดได้",
+  chooseTitle:"เลือกคลิปแบดมินตัน",
+  chooseHelp:"เห็นเต็มตัวและเท้าให้ชัด กล้องนิ่ง สามารถมีหลายจังหวะตีในคลิปเดียว",
+  analyzeBtn:"ตรวจคุณภาพและวิเคราะห์",
+  coachAdvice:"สิ่งที่ควรฝึกจากจังหวะนี้",
+  referenceNote:"คำแนะนำแสดงเฉพาะสิ่งที่ระบบวัดได้ ไม่สร้างคะแนนหรือองศาเป้าหมายที่ยังไม่มี reference รองรับ",
   qualityTitle:"ตรวจคุณภาพก่อนวิเคราะห์",
   qualityTracked:"ติดตามผู้เล่นได้",
   qualityVisibility:"ความชัดของข้อต่อ",
@@ -295,6 +308,19 @@ Object.assign(T.th,{
   playerGoodSize:"เพียงพอ"
 });
 Object.assign(T.en,{
+  brandSub:"AI Training Analysis · Quality First",
+  heroEyebrow:"QUALITY-FIRST ANALYSIS",
+  heroTitle:"Analyze multiple stroke events and only show results when the player can be measured reliably",
+  heroText:"Lock the player, run a quality gate, map stroke events, then measure joints and movement one event at a time.",
+  how1:"Choose clip",how1s:"Multiple strokes supported",
+  how2:"Lock player",how2s:"Tap yourself once",
+  how3:"Measure movement",how3s:"Crop + Full pose model",
+  how4:"Get guidance",how4s:"Only from measured evidence",
+  chooseTitle:"Choose a badminton clip",
+  chooseHelp:"Keep the full body and feet visible with a stable camera. Multiple strokes are supported.",
+  analyzeBtn:"Check quality and analyze",
+  coachAdvice:"What to train from this action",
+  referenceNote:"Guidance only uses what the system measured; no unvalidated score or target angle is invented.",
   qualityTitle:"Clip quality gate",
   qualityTracked:"Player tracking",
   qualityVisibility:"Joint visibility",
