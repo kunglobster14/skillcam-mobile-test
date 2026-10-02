@@ -114,7 +114,17 @@ Object.assign(T.th,{
   noAction:"ยังหาจังหวะตีที่ชัดเจนไม่ได้",
   frameMeasured:"วัดเฟรมนี้แล้ว",
   measuredAt:"วัดที่",
-  bodyBox:"กรอบผู้เล่นหลัก"
+  bodyBox:"กรอบผู้เล่นหลัก",
+  zoomTitle:"ภาพขยายผู้เล่น + มุมที่วัด",
+  zoomHelp:"AI crop ผู้เล่นหลักเพื่อให้เห็นข้อต่อชัดขึ้น",
+  fullFrameTitle:"วิดีโอเต็ม",
+  fullFrameHelp:"ใช้ดูบริบทและตรวจว่า AI ติดตามคนถูกหรือไม่",
+  reviewTitle:"สิ่งที่ควรตรวจจากเฟรมนี้",
+  reviewLowConf:"ข้อต่อบางจุดยังไม่ชัดพอ ควรถ่ายใกล้ขึ้นหรือให้ผู้เล่นกินพื้นที่ในเฟรมมากขึ้น",
+  reviewPerspective:"ค่า 2D กับ 3D ต่างกันมาก มุมกล้องมีผลสูง ควรใช้มุมกล้องคงที่และดู 3D estimate เป็นหลัก",
+  reviewBentElbow:"เฟรมนี้แขนข้างตียังงออยู่มาก หากนี่คือ contact จริง ควรนำไปเทียบกับ reference ของโค้ชก่อนตัดสินว่าต้องแก้",
+  reviewBalanced:"เฟรมนี้ระบบวัดข้อต่อหลักได้ค่อนข้างชัด เหมาะสำหรับนำไปเทียบกับ reference",
+  actionExplanation:"กลุ่มท่านี้จำแนกจากตำแหน่งข้อมือ ไหล่ สะโพก และความเร็วการเคลื่อนของแขน"
 });
 Object.assign(T.en,{
   skillMapTitle:"Skill Map",
@@ -136,7 +146,17 @@ Object.assign(T.en,{
   noAction:"No clear stroke moment found",
   frameMeasured:"Frame measured",
   measuredAt:"Measured at",
-  bodyBox:"Main-player box"
+  bodyBox:"Main-player box",
+  zoomTitle:"Magnified player + measured angles",
+  zoomHelp:"AI crops the tracked player so joints are easier to inspect",
+  fullFrameTitle:"Full video",
+  fullFrameHelp:"Use context to verify that AI is tracking the intended player",
+  reviewTitle:"What to inspect on this frame",
+  reviewLowConf:"Some joints are still unclear. Record closer or make the player larger in frame.",
+  reviewPerspective:"2D and 3D estimates differ substantially, so camera perspective is affecting the result. Keep the camera view consistent and prioritize the 3D estimate.",
+  reviewBentElbow:"The hitting arm is still quite bent on this frame. If this is true contact, compare it with a coach-validated reference before deciding it needs correction.",
+  reviewBalanced:"The main joints are detected clearly enough on this frame for reference comparison.",
+  actionExplanation:"This motion family is classified from wrist, shoulder, hip position, and arm movement speed."
 });
 
 function t(k){return T[lang][k]||T.en[k]||k}
@@ -390,9 +410,12 @@ async function measureCurrentFrame(){
     const srcX=Math.round(crop.x*v.videoWidth),srcY=Math.round(crop.y*v.videoHeight);
     const srcW=Math.max(1,Math.round(crop.w*v.videoWidth)),srcH=Math.max(1,Math.round(crop.h*v.videoHeight));
     const canvas=document.createElement("canvas");
-    const targetW=Math.min(720,Math.max(360,srcW));
-    const targetH=Math.max(360,Math.round(targetW*srcH/srcW));
-    canvas.width=targetW;canvas.height=Math.min(960,targetH);
+    const maxDim=720;
+    if(srcW>=srcH){
+      canvas.width=maxDim;canvas.height=Math.max(320,Math.round(maxDim*srcH/srcW));
+    }else{
+      canvas.height=maxDim;canvas.width=Math.max(320,Math.round(maxDim*srcW/srcH));
+    }
     const ctx=canvas.getContext("2d");
     ctx.drawImage(v,srcX,srcY,srcW,srcH,0,0,canvas.width,canvas.height);
 
@@ -413,7 +436,7 @@ async function measureCurrentFrame(){
     currentAnalysis.contact_time=precise.time;
     currentAnalysis.hitting_side=side;
     renderSkillMap();
-    renderPrecise();drawOverlay();await saveCurrentMeasurement();
+    renderPrecise();drawOverlay();drawZoomOverlay();renderMeasurementReview();await saveCurrentMeasurement();
     $("#measurementMode").textContent=t("frameMeasured")+" · "+precise.time+"s · "+t("cropMeasure");
     $("#cropBadge").classList.remove("hidden");
     showStatus($("#saveProgress").checked?t("saved"):t("notSaved"),"success")
@@ -443,7 +466,7 @@ async function selectAction(index){
   renderSkillMap();renderResultTextOnly();renderPrecise();
   const v=$("#resultVideo");v.pause();
   await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);v.currentTime=a.time;setTimeout(finish,700)});
-  if(a.precise){drawOverlay();$("#measurementMode").textContent=t("measuredAt")+" "+a.precise.time+"s"}
+  if(a.precise){drawOverlay();drawZoomOverlay();renderMeasurementReview();$("#measurementMode").textContent=t("measuredAt")+" "+a.precise.time+"s"}
   else{await measureCurrentFrame()}
 }
 
@@ -476,6 +499,53 @@ function renderPrecise(){
   }).join("")+"<div class='angle-card'><b>"+t("obsTorso")+"</b><div class='angle-main'>"+(m.torso_tilt_3d.value??"—")+"°</div><div class='angle-meta'><span>"+t("threeD")+"</span><span>"+t("confidence")+" "+pct(m.torso_tilt_3d.confidence)+"</span></div></div>";
   $("#metricsGrid").innerHTML=Object.entries(m).map(([k,v])=>"<div class='metric'><small>"+t("metric_"+k)+"</small><strong>"+(v.value??"—")+" "+v.unit+"</strong><small>"+t("confidence")+" "+pct(v.confidence)+"</small></div>").join("")+"<p class='note'>"+t("cameraWarning")+"</p>";
   $("#poseBadge").textContent=t("poseConfidence")+" "+pct(p.pose_confidence)+" · Full";
+}
+
+function drawZoomOverlay(){
+  const p=currentAnalysis?.precise,v=$("#resultVideo"),z=$("#zoomCanvas");
+  if(!p||!v.videoWidth||!z)return;
+  const crop=p.crop||{x:0,y:0,w:1,h:1};
+  const srcX=crop.x*v.videoWidth,srcY=crop.y*v.videoHeight,srcW=crop.w*v.videoWidth,srcH=crop.h*v.videoHeight;
+  const maxW=720;
+  if(srcW>=srcH){z.width=maxW;z.height=Math.max(320,Math.round(maxW*srcH/srcW))}
+  else{z.height=maxW;z.width=Math.max(320,Math.round(maxW*srcW/srcH))}
+  const ctx=z.getContext("2d");ctx.clearRect(0,0,z.width,z.height);ctx.drawImage(v,srcX,srcY,srcW,srcH,0,0,z.width,z.height);
+  if(!overlayVisible)return;
+  const j=p.image_joints;
+  const local=q=>[(q.x-crop.x)/crop.w*z.width,(q.y-crop.y)/crop.h*z.height];
+  const pairs=[["left_shoulder","right_shoulder"],["left_shoulder","left_elbow"],["left_elbow","left_wrist"],["right_shoulder","right_elbow"],["right_elbow","right_wrist"],["left_shoulder","left_hip"],["right_shoulder","right_hip"],["left_hip","right_hip"],["left_hip","left_knee"],["left_knee","left_ankle"],["right_hip","right_knee"],["right_knee","right_ankle"]];
+  ctx.strokeStyle="rgba(34,197,94,.98)";ctx.fillStyle="rgba(34,197,94,.98)";ctx.lineWidth=Math.max(4,z.width/170);
+  pairs.forEach(([a,b])=>{if(!visible(j[a])||!visible(j[b]))return;const A=local(j[a]),B=local(j[b]);ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.stroke()});
+  Object.values(j).forEach(q=>{if(!visible(q))return;const P=local(q);ctx.beginPath();ctx.arc(P[0],P[1],Math.max(6,z.width/140),0,Math.PI*2);ctx.fill()});
+
+  function angleArc(a,b,c,label){
+    if(!visible(j[a])||!visible(j[b])||!visible(j[c]))return;
+    const A=local(j[a]),B=local(j[b]),C=local(j[c]),r=Math.max(42,z.width/8.5);
+    let start=Math.atan2(A[1]-B[1],A[0]-B[0]),end=Math.atan2(C[1]-B[1],C[0]-B[0]),delta=end-start;
+    while(delta>Math.PI)delta-=Math.PI*2;while(delta<-Math.PI)delta+=Math.PI*2;
+    ctx.save();ctx.strokeStyle="rgba(245,158,11,.99)";ctx.lineWidth=Math.max(5,z.width/150);
+    ctx.beginPath();ctx.arc(B[0],B[1],r,start,start+delta,delta<0);ctx.stroke();
+    const mid=start+delta/2,tx=B[0]+Math.cos(mid)*(r+30),ty=B[1]+Math.sin(mid)*(r+30);
+    ctx.font="900 "+Math.max(20,Math.round(z.width/26))+"px -apple-system,sans-serif";
+    ctx.lineWidth=6;ctx.strokeStyle="rgba(0,0,0,.78)";ctx.strokeText(label,tx,ty);ctx.fillStyle="#fff";ctx.fillText(label,tx,ty);ctx.restore()
+  }
+  const side=p.side||currentAnalysis.hitting_side,m=p.metrics;
+  angleArc(side+"_shoulder",side+"_elbow",side+"_wrist",(m.elbow_3d.value??"—")+"°");
+  angleArc(side+"_hip",side+"_shoulder",side+"_elbow",(m.shoulder_3d.value??"—")+"°");
+  angleArc("left_hip","left_knee","left_ankle",(m.left_knee_3d.value??"—")+"°");
+  angleArc("right_hip","right_knee","right_ankle",(m.right_knee_3d.value??"—")+"°");
+}
+function renderMeasurementReview(){
+  const p=currentAnalysis?.precise;if(!p){$("#adviceList").innerHTML="";return}
+  const m=p.metrics,notes=[];
+  if(p.pose_confidence<.72)notes.push(t("reviewLowConf"));
+  const diffs=[
+    [m.elbow_3d,m.elbow_2d],[m.shoulder_3d,m.shoulder_2d],[m.left_knee_3d,m.left_knee_2d],[m.right_knee_3d,m.right_knee_2d]
+  ].filter(([a,b])=>a?.value!=null&&b?.value!=null).map(([a,b])=>Math.abs(a.value-b.value));
+  if(diffs.length&&Math.max(...diffs)>15)notes.push(t("reviewPerspective"));
+  if(m.elbow_3d?.value!=null&&m.elbow_3d.value<135)notes.push(t("reviewBentElbow"));
+  if(!notes.length)notes.push(t("reviewBalanced"));
+  $("#adviceList").innerHTML="<p class='note'><b>"+t("reviewTitle")+"</b></p>"+notes.map((n,i)=>"<div class='advice "+(i===0&&p.pose_confidence<.72?"check":"")+"'><b>"+(i+1)+".</b> "+n+"</div>").join("");
 }
 
 function drawOverlay(){
@@ -516,6 +586,8 @@ async function stepFrame(delta){
   await new Promise(resolve=>{let done=false;const finish=()=>{if(done)return;done=true;v.removeEventListener("seeked",finish);resolve()};v.addEventListener("seeked",finish);v.currentTime=target;setTimeout(finish,700)});
   const action=currentAnalysis.actions?.[currentActionIndex];if(action)action.precise=null;currentAnalysis.precise=null;renderPrecise();
   const c=$("#poseCanvas");if(c){const ctx=c.getContext("2d");ctx&&ctx.clearRect(0,0,c.width,c.height)}
+  const z=$("#zoomCanvas");if(z){const zc=z.getContext("2d");zc&&zc.clearRect(0,0,z.width,z.height)}
+  renderMeasurementReview()
   $("#measurementMode").textContent=t("confirmContact")+" · "+v.currentTime.toFixed(3)+"s"
 }
 function jumpToAIFrame(){
@@ -576,7 +648,7 @@ $("#contactBtn").addEventListener("click",jumpToAIFrame);
 $("#prevFrameBtn").addEventListener("click",()=>stepFrame(-1/30));
 $("#nextFrameBtn").addEventListener("click",()=>stepFrame(1/30));
 $("#measureFrameBtn").addEventListener("click",measureCurrentFrame);
-$("#overlayBtn").addEventListener("click",function(){overlayVisible=!overlayVisible;this.textContent=overlayVisible?t("hideOverlay"):t("showOverlay");drawOverlay()});
+$("#overlayBtn").addEventListener("click",function(){overlayVisible=!overlayVisible;this.textContent=overlayVisible?t("hideOverlay"):t("showOverlay");drawOverlay();drawZoomOverlay()});
 $("#retryBtn").addEventListener("click",()=>{$("#videoInput").value="";currentFile=null;currentAnalysis=null;currentSessionId=null;$("#analysisCard").classList.add("hidden");$("#videoPicker").classList.remove("selected");$("#fileMeta").textContent=t("fileHint");$("#analyzeBtn").disabled=true;$("#analyzeBtnText").textContent=t("chooseFirst");hideStatus();setView("analyze")});
 $("#videoInput").addEventListener("change",e=>{
   const f=e.target.files?.[0];currentFile=f||null;currentSessionId=null;
