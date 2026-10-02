@@ -1281,7 +1281,7 @@ function renderLearn(){
 }
 function applyLanguage(){
   document.documentElement.lang=lang;$("#languageSelect").value=lang;$$("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));renderLearn();
-  if(currentAnalysis){renderSkillMap();renderAnalysisOverview();renderResultTextOnly();renderPrecise();setupMiniClip(currentAnalysis.actions?.[currentActionIndex])}
+  if(currentAnalysis){renderSkillMap();renderAnalysisOverview();renderResultTextOnly();renderPrecise();setupMiniClip(currentAnalysis.actions?.[currentActionIndex]);renderKeyFrames()}
 }
 function renderResultTextOnly(){
   const a=currentAnalysis;if(!a)return;
