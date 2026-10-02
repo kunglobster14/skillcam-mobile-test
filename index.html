@@ -11,57 +11,85 @@
 <body>
 <header class="top">
   <div class="brand">SkillCam</div>
-  <button id="menuBtn" class="ghost">เมนู</button>
+  <div class="top-actions">
+    <select id="languageSelect" class="lang-select" aria-label="Language">
+      <option value="th">ไทย</option>
+      <option value="en">English</option>
+    </select>
+    <button id="menuBtn" class="ghost" data-i18n="menu">เมนู</button>
+  </div>
 </header>
 
 <nav id="nav" class="nav">
-  <button data-view="player" class="active">ผู้เล่น</button>
-  <button data-view="coach">Coach</button>
-  <button data-view="dashboard">Validation</button>
+  <button data-view="player" class="active" data-i18n="playerTab">ผู้เล่น</button>
+  <button data-view="coach" data-i18n="coachTab">โค้ช</button>
+  <button data-view="dashboard" data-i18n="validationTab">ตรวจสอบความแม่นยำ</button>
 </nav>
 
 <main class="wrap">
   <section id="playerView">
     <div class="hero">
-      <span class="pill">Badminton Smash · Local Validation</span>
-      <h1>วัดท่า Smash จากคลิปบน iPhone</h1>
-      <p>ข้อมูลทั้งหมดของเวอร์ชันทดสอบนี้เก็บใน Safari บน iPhone เครื่องนี้ ไม่ส่งขึ้น cloud</p>
+      <span class="pill" data-i18n="heroPill">Badminton Smash · รุ่นทดสอบ</span>
+      <h1 data-i18n="heroTitle">วิเคราะห์ท่า Smash จากคลิปบน iPhone</h1>
+      <p data-i18n="heroBody">ระบบจะวัดการเคลื่อนไหวจากคลิปก่อน แล้วให้โค้ชช่วยตรวจว่าค่าที่ระบบคำนวณตรงกับสิ่งที่เห็นจริงหรือไม่</p>
     </div>
 
     <div class="card">
-      <h2>1. เลือกคลิป</h2>
-      <label>ชื่อ/รหัสผู้ทดสอบ</label>
+      <h2 data-i18n="step1">1. เลือกคลิป</h2>
+      <label data-i18n="testerName">ชื่อ/รหัสผู้ทดสอบ</label>
       <input id="playerName" value="Player 001">
-      <label>วิดีโอ Smash <span class="pill ok">Max 200 MB</span></label>
+      <label><span data-i18n="smashVideo">วิดีโอ Smash</span> <span class="pill ok">Max 200 MB</span></label>
       <input id="videoInput" type="file" accept="video/*">
-      <p class="small">รองรับคลิปยาวขึ้น ระบบจะวิเคราะห์ช่วงต้นสูงสุด 30 วินาที เห็นเต็มตัว กล้องนิ่ง ไม่ถูกบัง</p>
+      <p class="small" data-i18n="videoHint">ระบบวิเคราะห์ช่วงต้นสูงสุด 30 วินาที ถ้ามีหลาย Smash ในคลิปอาจเลือกจังหวะตีผิด แนะนำให้เหลือ 1 Smash ต่อคลิปเมื่อจะตรวจความแม่นยำจริง</p>
 
-      <label class="check"><input id="consentAnalysis" type="checkbox" checked><span>ยินยอมให้วิเคราะห์คลิปนี้</span></label>
-      <label class="check"><input id="consentImprove" type="checkbox"><span>ยินยอมให้เก็บ session นี้ไว้ใช้ปรับปรุง SkillCam ภายหลัง</span></label>
+      <label class="check"><input id="consentAnalysis" type="checkbox" checked><span data-i18n="consentAnalyze">ยินยอมให้วิเคราะห์คลิปนี้</span></label>
+      <label class="check"><input id="consentImprove" type="checkbox"><span data-i18n="consentImprove">ยินยอมให้เก็บ session นี้ไว้ใช้ปรับปรุง SkillCam ภายหลัง</span></label>
 
-      <button id="analyzeBtn" class="btn">Analyze Smash</button>
+      <button id="analyzeBtn" class="btn" data-i18n="analyzeButton">วิเคราะห์ Smash</button>
       <div id="playerMessage"></div>
     </div>
 
     <div id="analysisCard" class="card hidden">
-      <h2>AI Measurement</h2>
+      <h2 data-i18n="resultTitle">ผลวิเคราะห์เบื้องต้น</h2>
       <div id="analysisStatus"></div>
-      <div id="metricsGrid" class="grid"></div>
-      <p class="small">ค่าชุดนี้เป็น 2D measurement/proxy สำหรับ validation ยังไม่ใช่คำตัดสินว่าท่าถูกหรือผิด</p>
+
+      <div class="summary-box">
+        <h3 data-i18n="simpleSummaryTitle">สรุปให้อ่านง่าย</h3>
+        <div id="simpleSummary"></div>
+      </div>
+
+      <div id="contactReview" class="contact-review hidden">
+        <h3 data-i18n="checkMomentTitle">ตรวจว่าระบบเลือกจังหวะตีถูกหรือไม่</h3>
+        <video id="resultVideo" controls playsinline></video>
+        <button id="jumpContactBtn" class="btn secondary" data-i18n="jumpContact">ดูช่วงจังหวะตีที่ระบบเลือก</button>
+        <p class="small" data-i18n="checkMomentHint">ถ้าจังหวะที่ระบบเลือกไม่ใช่ Smash ที่ต้องการ ค่าอื่น ๆ อาจไม่น่าเชื่อถือ ให้ใช้คลิปที่มีเพียง 1 Smash แล้ววิเคราะห์ใหม่</p>
+      </div>
+
+      <details class="technical">
+        <summary data-i18n="technicalDetails">ดูค่ารายละเอียด</summary>
+        <div id="metricsGrid" class="grid"></div>
+        <p class="small" data-i18n="measurementDisclaimer">ค่าชุดนี้เป็นการวัดแบบ 2D/proxy สำหรับตรวจสอบความแม่นยำ ยังไม่ใช่คำตัดสินว่าท่าถูกหรือผิด</p>
+      </details>
+
+      <div class="next-steps">
+        <h3 data-i18n="nextTitle">ต้องทำอะไรต่อ</h3>
+        <ol id="nextStepsList"></ol>
+        <button id="goCoachBtn" class="btn" data-i18n="goCoach">ไปให้โค้ชตรวจ</button>
+      </div>
     </div>
 
     <div id="coachStatusCard" class="card hidden">
-      <h2>Coach Validation</h2>
+      <h2 data-i18n="coachValidationTitle">สถานะการตรวจของโค้ช</h2>
       <div id="coachStatus"></div>
-      <button id="refreshBtn" class="btn secondary">Refresh Coach Result</button>
+      <button id="refreshBtn" class="btn secondary" data-i18n="refreshCoach">รีเฟรชผลโค้ช</button>
     </div>
   </section>
 
   <section id="coachView" class="hidden">
     <div class="hero">
-      <span class="pill">Blind Review</span>
-      <h1>Coach Portal</h1>
-      <p>โค้ชต้องประเมินคลิปก่อนเห็นผลระบบ</p>
+      <span class="pill" data-i18n="blindReviewPill">ตรวจแบบไม่เห็นผลระบบก่อน</span>
+      <h1 data-i18n="coachPortalTitle">หน้าสำหรับโค้ช</h1>
+      <p data-i18n="coachPortalBody">โค้ชดูคลิปและให้ความเห็นก่อน จากนั้นระบบจึงเปิดผลการคำนวณให้เปรียบเทียบ</p>
     </div>
     <div id="coachQueue" class="card"></div>
     <div id="coachPanel"></div>
@@ -69,13 +97,13 @@
 
   <section id="dashboardView" class="hidden">
     <div class="hero">
-      <span class="pill">Validation</span>
-      <h1>System vs Coach</h1>
+      <span class="pill" data-i18n="validationPill">Validation</span>
+      <h1 data-i18n="validationTitle">ระบบตรงกับโค้ชแค่ไหน</h1>
     </div>
     <div id="dashboard" class="card"></div>
   </section>
 </main>
 
-<script type="module" src="./app-v3.js"></script>
+<script type="module" src="./app-v4.js"></script>
 </body>
 </html>
