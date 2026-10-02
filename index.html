@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v10.css">
+  <link rel="stylesheet" href="./styles-v11.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -70,7 +70,9 @@
           <div><h3 data-i18n="playerLockTitle">เลือกผู้เล่นที่จะวิเคราะห์</h3><p data-i18n="playerLockHelp">แตะที่ลำตัวของคุณในภาพหนึ่งครั้ง AI จะใช้จุดนี้เป็นตัวล็อกตลอดคลิป</p></div>
         </div>
         <div class="selector-stage">
+          <video id="playerSelectVideo" muted playsinline preload="auto"></video>
           <canvas id="playerSelectCanvas"></canvas>
+          <div id="selectorLoading" class="selector-loading hidden" data-i18n="preparingFrame">กำลังเตรียมภาพสำหรับเลือกผู้เล่น...</div>
         </div>
         <div id="playerLockState" class="note" data-i18n="tapPlayer">ยังไม่ได้เลือกผู้เล่น</div>
       </div>
@@ -234,6 +236,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v10.js"></script>
+<script type="module" src="./app-v11.js"></script>
 </body>
 </html>
