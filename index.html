@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v8.css">
+  <link rel="stylesheet" href="./styles-v9.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
 <header class="appbar">
   <div>
     <div class="brand">SkillCam</div>
-    <div class="brand-sub" data-i18n="brandSub">AI Visual Coach · Badminton Smash</div>
+    <div class="brand-sub" data-i18n="brandSub">AI Skill Mapping · Player Lock</div>
   </div>
   <select id="languageSelect" class="lang-select" aria-label="Language">
     <option value="th">ไทย</option>
@@ -63,6 +63,17 @@
         </div>
       </label>
       <input id="videoInput" type="file" accept="video/*" hidden>
+
+      <div id="playerLockPanel" class="player-lock hidden">
+        <div class="section-title compact">
+          <span class="step-dot">2</span>
+          <div><h3 data-i18n="playerLockTitle">เลือกผู้เล่นที่จะวิเคราะห์</h3><p data-i18n="playerLockHelp">แตะที่ลำตัวของคุณในภาพหนึ่งครั้ง AI จะใช้จุดนี้เป็นตัวล็อกตลอดคลิป</p></div>
+        </div>
+        <div class="selector-stage">
+          <canvas id="playerSelectCanvas"></canvas>
+        </div>
+        <div id="playerLockState" class="note" data-i18n="tapPlayer">ยังไม่ได้เลือกผู้เล่น</div>
+      </div>
 
       <label class="check-row"><input id="consentAnalysis" type="checkbox" checked><span data-i18n="consent">ยินยอมให้วิเคราะห์คลิปบนอุปกรณ์นี้</span></label>
       <label class="check-row subtle"><input id="saveProgress" type="checkbox" checked><span data-i18n="saveProgress">เก็บผลไว้ใน Safari เพื่อดูพัฒนาการ</span></label>
@@ -141,8 +152,14 @@
         <div id="angleCards" class="angle-grid"></div>
       </div>
 
+      <div class="coach-section evaluation-section">
+        <h3 data-i18n="evaluationTitle">Biomechanics Check</h3>
+        <div id="evaluationSummary"></div>
+        <div id="checkList" class="check-list"></div>
+      </div>
+
       <div class="coach-section reference-section">
-        <h3 data-i18n="referenceTitle">เปรียบเทียบกับท่าอ้างอิง</h3>
+        <h3 data-i18n="referenceTitle">Reference Angle</h3>
         <div id="referenceState"></div>
       </div>
 
@@ -200,6 +217,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v8.js"></script>
+<script type="module" src="./app-v9.js"></script>
 </body>
 </html>
