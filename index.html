@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v12.css">
+  <link rel="stylesheet" href="./styles-v13.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -118,6 +118,7 @@
       <div class="insight-card">
         <h3 data-i18n="whatSaw">AI เห็นอะไร</h3>
         <div id="summaryText"></div>
+        <div id="analysisOverview" class="analysis-overview"></div>
       </div>
 
       <div class="skill-map-panel">
@@ -129,9 +130,26 @@
         <div id="skillTimeline" class="skill-timeline"></div>
       </div>
 
-      <div class="accuracy-panel">
+      <div class="mini-clip-section">
         <div class="section-title compact">
           <span class="step-dot">3</span>
+          <div><h3 data-i18n="miniClipTitle">คลิปสั้นของจังหวะสำคัญ</h3><p data-i18n="miniClipHelp">AI ตัดช่วงก่อน–หลังเหตุการณ์และวาดกรอบติดตามผู้เล่นตลอด mini‑clip</p></div>
+        </div>
+        <div class="mini-video-stage">
+          <video id="miniClipVideo" controls playsinline muted></video>
+          <canvas id="miniTrackCanvas"></canvas>
+          <div id="miniClipBadge" class="mini-clip-badge"></div>
+        </div>
+        <div class="button-row">
+          <button id="playSegmentBtn" type="button" class="secondary-btn" data-i18n="playSegment">เล่นจังหวะนี้</button>
+          <button id="loopSegmentBtn" type="button" class="secondary-btn active-toggle" data-i18n="loopOn">เล่นวน: เปิด</button>
+        </div>
+        <div id="segmentMeta" class="note"></div>
+      </div>
+
+      <div class="accuracy-panel">
+        <div class="section-title compact">
+          <span class="step-dot">4</span>
           <div><h3 data-i18n="accuracyTitle">ยืนยันเฟรมและวัดองศา</h3><p data-i18n="accuracyHelp">AI เลือกเฟรมจาก Skill Map ให้ก่อน และสามารถเลื่อนไปยังเฟรมตัวอย่างข้างเคียงแล้ววัดใหม่</p></div>
         </div>
         <div class="frame-controls">
@@ -144,7 +162,7 @@
 
       <div class="visual-section">
         <div class="section-title compact">
-          <span class="step-dot">4</span>
+          <span class="step-dot">5</span>
           <div><h3 data-i18n="visualTitle">Visual Coach</h3><p data-i18n="visualHelp">ตรวจว่าจังหวะที่ AI เลือกตรงกับ Smash ของคุณก่อน</p></div>
         </div>
         <div class="legend">
@@ -241,6 +259,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v12.js"></script>
+<script type="module" src="./app-v13.js"></script>
 </body>
 </html>
