@@ -13,12 +13,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - run: node --check app-v15.js
-      - run: grep -q 'app-v15.js' index.html
-      - run: grep -q 'skillcam-local-v15' sw.js
+      - run: node --check app-v16.js
+      - run: grep -q 'app-v16.js' index.html
+      - run: grep -q 'skillcam-local-v16' sw.js
       - run: grep -q 'keyFrameGrid' index.html
-      - run: grep -q 'keyFramesTitle' app-v15.js
+      - run: grep -q 'skillReplayImage' index.html
+      - run: grep -q 'replaySpeedSelect' index.html
+      - run: grep -q 'replayPhase' app-v16.js
+      - run: grep -q 'keyFramesTitle' app-v16.js
       - run: test -f index.html
-      - run: test -f styles-v15.css
+      - run: test -f styles-v16.css
       - run: test -f manifest.webmanifest
       - run: test -f sw.js
