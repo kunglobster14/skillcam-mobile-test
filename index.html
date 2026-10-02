@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles-v11.css">
+  <link rel="stylesheet" href="./styles-v12.css">
   <title>SkillCam AI Coach</title>
 </head>
 <body>
@@ -33,7 +33,7 @@
       <h1 data-i18n="heroTitle">ถ่ายหรือเลือกคลิป แล้วดูว่า AI เห็นอะไรในท่า Smash</h1>
       <p data-i18n="heroText">AI จะหาจังหวะตี จำแนก Standing / Moving / Jump-like และวิเคราะห์ Footwork เฉพาะเมื่อพบการเคลื่อนที่จริง</p>
       <div class="how-grid">
-        <div><span>1</span><b data-i18n="how1">เลือกคลิป</b><small data-i18n="how1s">1 Smash ต่อคลิปดีที่สุด</small></div>
+        <div><span>1</span><b data-i18n="how1">เลือกคลิป</b><small data-i18n="how1s">รองรับหลายจังหวะตีในคลิป</small></div>
         <div><span>2</span><b data-i18n="how2">กดวิเคราะห์</b><small data-i18n="how2s">AI ทำงานบน iPhone</small></div>
         <div><span>3</span><b data-i18n="how3">ดู Visual Coach</b><small data-i18n="how3s">Skeleton + มุม + คำแนะนำ</small></div>
         <div><span>4</span><b data-i18n="how4">ฝึกใหม่</b><small data-i18n="how4s">เปรียบเทียบกับครั้งก่อน</small></div>
@@ -96,6 +96,11 @@
         <span id="analyzeBtnText" data-i18n="analyzeBtn">เลือกคลิปก่อน</span>
       </button>
       <div id="statusBox" class="status hidden" role="status"></div>
+      <div id="qualityCard" class="quality-card hidden">
+        <h3 data-i18n="qualityTitle">ตรวจคุณภาพคลิป</h3>
+        <div id="qualityMetrics" class="quality-grid"></div>
+        <div id="qualityAdvice"></div>
+      </div>
     </div>
 
     <div id="analysisCard" class="panel hidden">
@@ -127,12 +132,12 @@
       <div class="accuracy-panel">
         <div class="section-title compact">
           <span class="step-dot">3</span>
-          <div><h3 data-i18n="accuracyTitle">ยืนยันเฟรมและวัดองศา</h3><p data-i18n="accuracyHelp">AI เลือกเฟรมให้ก่อน แต่คุณสามารถขยับเฟรมแล้วให้ระบบวัดใหม่แบบละเอียด</p></div>
+          <div><h3 data-i18n="accuracyTitle">ยืนยันเฟรมและวัดองศา</h3><p data-i18n="accuracyHelp">AI เลือกเฟรมจาก Skill Map ให้ก่อน และสามารถเลื่อนไปยังเฟรมตัวอย่างข้างเคียงแล้ววัดใหม่</p></div>
         </div>
         <div class="frame-controls">
-          <button id="prevFrameBtn" type="button" class="secondary-btn">−0.033s</button>
+          <button id="prevFrameBtn" type="button" class="secondary-btn">−0.10s</button>
           <button id="measureFrameBtn" type="button" class="primary-btn compact-btn" data-i18n="measureFrame">วัดเฟรมนี้แบบละเอียด</button>
-          <button id="nextFrameBtn" type="button" class="secondary-btn">+0.033s</button>
+          <button id="nextFrameBtn" type="button" class="secondary-btn">+0.10s</button>
         </div>
         <div id="measurementMode" class="note"></div>
       </div>
@@ -181,9 +186,9 @@
         <div id="referenceState"></div>
       </div>
 
-      <div class="coach-section">
-        <h3 data-i18n="coachAdvice">AI Coach แนะนำให้ลองปรับ</h3>
-        <p class="reference-note" data-i18n="referenceNote">คำแนะนำนี้เป็น development reference ยังไม่ใช่มาตรฐานโค้ชที่ผ่านการรับรอง</p>
+      <div class="coach-section coach-output">
+        <h3 data-i18n="coachAdvice">สิ่งที่ควรฝึกจากจังหวะนี้</h3>
+        <p class="reference-note" data-i18n="referenceNote">คำแนะนำจะแสดงเฉพาะสิ่งที่ระบบวัดได้จากคลิป ไม่สร้างคะแนนหรือองศาเป้าหมายที่ยังไม่มี reference รองรับ</p>
         <div id="adviceList"></div>
       </div>
 
@@ -236,6 +241,6 @@
   </section>
 </main>
 
-<script type="module" src="./app-v11.js"></script>
+<script type="module" src="./app-v12.js"></script>
 </body>
 </html>
